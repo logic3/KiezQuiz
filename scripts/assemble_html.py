@@ -251,29 +251,29 @@ def main():
     width = bbox_match.group(1) if bbox_match else "615"
     height = bbox_match.group(2) if bbox_match else "600"
 
-    # Define beautiful organic glowing blue water landmarks (Extra Thick Elbe Channels V2!)
-    water_group = f'''<g class="water-group">
-    <!-- Norderelbe Main Channel (Thick, highly visible glowing line) -->
-    <path d="M -50,375 Q 120,360 210,346 T 430,344 T 665,348" fill="none" stroke="rgba(0, 162, 255, 0.55)" stroke-width="16" stroke-linecap="round" style="filter: drop-shadow(0 0 8px rgba(0, 162, 255, 0.6));" />
-    <path d="M -50,375 Q 120,360 210,346 T 430,344 T 665,348" fill="none" stroke="rgba(0, 220, 255, 0.28)" stroke-width="24" stroke-linecap="round" />
-    
-    <!-- Süderelbe Channel (Thick glowing line surrounding Wilhelmsburg/Harburg) -->
-    <path d="M 210,346 C 210,380 230,420 300,430 T 450,440 T 665,395" fill="none" stroke="rgba(0, 150, 255, 0.48)" stroke-width="12" stroke-linecap="round" style="filter: drop-shadow(0 0 6px rgba(0, 150, 255, 0.5));" />
-    <path d="M 210,346 C 210,380 230,420 300,430 T 450,440 T 665,395" fill="none" stroke="rgba(0, 220, 255, 0.22)" stroke-width="18" stroke-linecap="round" />
-    
-    <!-- Außenalster Lake (Centered drop between Harvestehude & Uhlenhorst) -->
-    <path d="M 270,320 C 260,300 262,280 272,270 C 280,265 288,285 293,305 C 295,318 282,323 270,320 Z" fill="rgba(0, 150, 255, 0.22)" stroke="rgba(0, 200, 255, 0.5)" stroke-width="1.5" style="filter: drop-shadow(0 0 6px rgba(0, 200, 255, 0.4));" />
-    
-    <!-- Binnenalster Lake (Small square body joining at the bottom) -->
-    <path d="M 270,320 L 266,325 L 273,330 L 277,325 Z" fill="rgba(0, 150, 255, 0.25)" stroke="rgba(0, 200, 255, 0.4)" stroke-width="1" />
+    water_defs = '''<defs>
+    <linearGradient id="water-body-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(45, 140, 210, 0.38)"/>
+      <stop offset="100%" stop-color="rgba(20, 75, 140, 0.48)"/>
+    </linearGradient>
+  </defs>'''
+
+    water_group = '''<g class="water-group">
+    <path class="water-channel-glow" d="M -20,372 Q 95,358 205,348 Q 320,338 430,342 Q 520,348 640,352" />
+    <path class="water-channel" d="M -20,372 Q 95,358 205,348 Q 320,338 430,342 Q 520,348 640,352" />
+    <path class="water-channel-glow" d="M 205,348 C 215,385 255,418 335,432 Q 420,442 640,400" />
+    <path class="water-channel" d="M 205,348 C 215,385 255,418 335,432 Q 420,442 640,400" />
+    <ellipse class="water-fill" cx="283" cy="292" rx="22" ry="28" />
+    <ellipse class="water-fill" cx="272" cy="318" rx="8" ry="6" />
   </g>'''
 
-    # Complete SVG embedding
+    # Complete SVG embedding (water below districts)
     svg_inlined = f'''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width} {height}" class="hamburg-map-svg">
+  {water_defs}
+  {water_group}
   <g class="stadtteile-group">
     {joined_paths}
   </g>
-  {water_group}
   <g id="map-labels-group" style="pointer-events: none;"></g>
 </svg>'''
 
