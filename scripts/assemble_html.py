@@ -268,16 +268,15 @@ def main():
   </defs>'''
 
     water_group = '''<g class="water-group">
-    <path class="water-channel-bed" d="M -20,372 Q 95,358 205,348 Q 320,338 430,342 Q 520,348 640,352" />
-    <path class="water-channel-glow" d="M -20,372 Q 95,358 205,348 Q 320,338 430,342 Q 520,348 640,352" />
-    <path class="water-channel" d="M -20,372 Q 95,358 205,348 Q 320,338 430,342 Q 520,348 640,352" />
-    <path class="water-channel-bed" d="M 205,348 C 215,385 255,418 335,432 Q 420,442 640,400" />
-    <path class="water-channel-glow" d="M 205,348 C 215,385 255,418 335,432 Q 420,442 640,400" />
-    <path class="water-channel" d="M 205,348 C 215,385 255,418 335,432 Q 420,442 640,400" />
-    <ellipse class="water-fill" cx="283" cy="292" rx="22" ry="28" />
-    <ellipse class="water-shimmer" cx="278" cy="286" rx="10" ry="12" />
-    <ellipse class="water-fill" cx="272" cy="318" rx="8" ry="6" />
-    <ellipse class="water-shimmer" cx="270" cy="316" rx="3" ry="2.5" />
+    <path class="water-body" d="M -25,378 L 42,365 L 88,358 L 142,352 L 188,346 L 232,342 L 278,339 L 328,340 L 378,344 L 430,348 L 485,352 L 545,354 L 650,358 L 650,372 L 545,368 L 485,366 L 430,362 L 378,358 L 328,354 L 278,353 L 232,356 L 188,362 L 142,368 L 88,374 L 42,381 L -25,392 Z" />
+    <path class="water-outline" d="M -25,378 L 42,365 L 88,358 L 142,352 L 188,346 L 232,342 L 278,339 L 328,340 L 378,344 L 430,348 L 485,352 L 545,354 L 650,358" />
+    <path class="water-body" d="M 188,346 L 198,362 L 218,382 L 248,402 L 288,418 L 338,428 L 398,432 L 468,424 L 540,412 L 620,398 L 650,392 L 650,408 L 620,414 L 540,428 L 468,440 L 398,448 L 338,444 L 288,434 L 248,418 L 218,398 L 198,378 L 188,362 Z" />
+    <path class="water-outline" d="M 188,346 L 198,362 L 218,382 L 248,402 L 288,418 L 338,428 L 398,432 L 468,424 L 540,412 L 620,398 L 650,392" />
+    <path class="water-body" d="M 251,279 L 261,273 L 272,272 L 282,275 L 291,281 L 297,290 L 299,302 L 297,312 L 291,320 L 282,325 L 271,326 L 261,323 L 254,316 L 250,305 L 249,293 L 251,279 Z" />
+    <path class="water-outline" d="M 251,279 L 261,273 L 272,272 L 282,275 L 291,281 L 297,290 L 299,302 L 297,312 L 291,320 L 282,325 L 271,326 L 261,323 L 254,316 L 250,305 L 249,293 Z" />
+    <path class="water-body" d="M 261,311 L 270,309 L 277,312 L 279,318 L 275,323 L 268,325 L 262,322 L 260,316 L 261,311 Z" />
+    <path class="water-outline" d="M 261,311 L 270,309 L 277,312 L 279,318 L 275,323 L 268,325 L 262,322 L 260,316 Z" />
+    <path class="water-body" d="M 279,318 L 282,325 L 278,332 L 272,336 L 266,334 L 268,328 L 274,322 L 279,318 Z" />
   </g>'''
 
     # Complete SVG embedding (water below districts)
@@ -320,8 +319,13 @@ def main():
         
         <!-- Streak Pill -->
         <div class="stat-pill streak-pill" title="Deine aktuelle Antwortserie">
-          <span class="label">Serie 🔥:</span>
-          <span class="value" id="stat-streak">0x</span>
+          <div class="streak-info">
+            <div class="streak-current">
+              <span class="label">Serie 🔥:</span>
+              <span class="value" id="stat-streak">0x</span>
+            </div>
+            <div class="streak-best" id="stat-best-streak">Beste: 0x</div>
+          </div>
         </div>
         
         <!-- Level & Rank tracker -->
