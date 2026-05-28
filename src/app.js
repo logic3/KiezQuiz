@@ -12,19 +12,19 @@ const RANKS = [
   { level: 5, name: "Hamburg-Experte", minXp: 1000, maxXp: Infinity }
 ];
 
-// Bezirke unlock progression order & requirements
+// Bezirke unlock progression order (first unlocked: Altona, last: Bergedorf)
 const BEZIRKE_PROGRESSION = [
-  { name: "Eimsbüttel", xpNeeded: 0 },
-  { name: "Hamburg-Nord", xpNeeded: 50 },
-  { name: "Altona", xpNeeded: 150 },
-  { name: "Harburg", xpNeeded: 300 },
-  { name: "Bergedorf", xpNeeded: 500 },
-  { name: "Wandsbek", xpNeeded: 750 },
-  { name: "Hamburg-Mitte", xpNeeded: 1000 }
+  { name: "Altona", xpNeeded: 0 },
+  { name: "Eimsbüttel", xpNeeded: 50 },
+  { name: "Hamburg-Nord", xpNeeded: 150 },
+  { name: "Wandsbek", xpNeeded: 300 },
+  { name: "Hamburg-Mitte", xpNeeded: 500 },
+  { name: "Harburg", xpNeeded: 750 },
+  { name: "Bergedorf", xpNeeded: 1000 }
 ];
 
-// Modes only available when learning Stadtteile (not Bezirke segment)
-const BEZIRKE_SEGMENT_HIDDEN_MODES = ['NAME_ALL'];
+// Modes hidden in Bezirke segment (none — NAME_ALL available in both segments)
+const BEZIRKE_SEGMENT_HIDDEN_MODES = [];
 
 const MODE_LABELS = {
   EXPLORER: 'Entdecker-Modus',
@@ -166,38 +166,68 @@ class SoundManager {
     this.init().then(() => this._ensureRunning()).then(() => this._playLevelUpTone());
   }
 
-  playConfetti() {
+  playApplause() {
     if (this.muted) return;
-    this.init().then(() => this._ensureRunning()).then(() => this._playConfettiTone());
+    this.init().then(() => this._ensureRunning()).then(() => this._playApplauseTone());
   }
 
-  _playConfettiTone() {
+  _playApplauseTone() {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
-    const pops = [
-      { freq: 440, type: 'square', delay: 0, dur: 0.12 },
-      { freq: 554, type: 'triangle', delay: 0.07, dur: 0.12 },
-      { freq: 659, type: 'square', delay: 0.14, dur: 0.12 },
-      { freq: 880, type: 'triangle', delay: 0.21, dur: 0.18 },
-      { freq: 1108, type: 'sine', delay: 0.30, dur: 0.25 }
+    const claps = [
+      { delay: 0, dur: 0.04, vol: 0.06 },
+      { delay: 0.09, dur: 0.035, vol: 0.05 },
+      { delay: 0.17, dur: 0.04, vol: 0.055 },
+      { delay: 0.28, dur: 0.035, vol: 0.045 },
+      { delay: 0.38, dur: 0.03, vol: 0.04 },
+      { delay: 0.52, dur: 0.025, vol: 0.03 }
     ];
 
-    pops.forEach(({ freq, type, delay, dur }) => {
-      const osc = this.ctx.createOscillator();
+    claps.forEach(({ delay, dur, vol }) => {
+      const bufferSize = Math.floor(this.ctx.sampleRate * dur);
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        const env = 1 - i / bufferSize;
+        data[i] = (Math.random() * 2 - 1) * env;
+      }
+      const source = this.ctx.createBufferSource();
+      const filter = this.ctx.createBiquadFilter();
       const gain = this.ctx.createGain();
-      osc.type = type;
-      osc.frequency.setValueAtTime(freq * 0.85, t + delay);
-      osc.frequency.exponentialRampToValueAtTime(freq * 1.05, t + delay + dur * 0.4);
-
-      gain.gain.setValueAtTime(0, t + delay);
-      gain.gain.linearRampToValueAtTime(0.09, t + delay + 0.015);
+      source.buffer = buffer;
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(900 + Math.random() * 400, t + delay);
+      filter.Q.setValueAtTime(0.8, t + delay);
+      gain.gain.setValueAtTime(vol, t + delay);
       gain.gain.exponentialRampToValueAtTime(0.001, t + delay + dur);
-
-      osc.connect(gain);
+      source.connect(filter);
+      filter.connect(gain);
       gain.connect(this.ctx.destination);
-      osc.start(t + delay);
-      osc.stop(t + delay + dur + 0.05);
+      source.start(t + delay);
+      source.stop(t + delay + dur + 0.01);
     });
+  }
+
+  playSad() {
+    if (this.muted) return;
+    this.init().then(() => this._ensureRunning()).then(() => this._playSadTone());
+  }
+
+  _playSadTone() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(220, t);
+    osc.frequency.linearRampToValueAtTime(165, t + 0.6);
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(0.08, t + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.75);
   }
 
   _ensureRunning() {
@@ -274,8 +304,24 @@ function parsePathSegments(d) {
   return segments;
 }
 
+function launchSadEffects(soundManager) {
+  if (soundManager) soundManager.playSad();
+  const overlay = document.createElement('div');
+  overlay.className = 'sad-overlay';
+  document.body.appendChild(overlay);
+  for (let i = 0; i < 18; i++) {
+    const drop = document.createElement('div');
+    drop.className = 'sad-raindrop';
+    drop.style.left = `${Math.random() * 100}%`;
+    drop.style.animationDelay = `${Math.random() * 0.8}s`;
+    drop.style.setProperty('--fall-dur', `${0.9 + Math.random() * 0.6}s`);
+    overlay.appendChild(drop);
+  }
+  setTimeout(() => overlay.remove(), 2200);
+}
+
 function launchConfetti(soundManager) {
-  if (soundManager) soundManager.playConfetti();
+  if (soundManager) soundManager.playApplause();
   const container = document.createElement('div');
   container.className = 'confetti-container';
   const colors = ['#22c55e', '#00a2ff', '#fbbf24', '#a855f7', '#ef4444', '#14b8a6'];
@@ -310,10 +356,9 @@ class MapNavigator {
   }
 
   setupListeners() {
-    // Mouse Dragging for Panning (not on district paths — those are for clicks)
+    // Mouse Dragging for Panning (works on empty map areas and on district paths)
     this.container.addEventListener('mousedown', (e) => {
       if (e.button !== 0) return;
-      if (e.target.closest('.stadtteil-path')) return;
       this.isDragging = true;
       this.didDrag = false;
       this.svg.classList.remove('smooth-transition'); // Disable transition for 1:1 real-time drag
@@ -342,6 +387,7 @@ class MapNavigator {
     this.container.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         this.isDragging = true;
+        this.didDrag = false;
         this.svg.classList.remove('smooth-transition');
         this.startX = e.touches[0].clientX - this.panX;
         this.startY = e.touches[0].clientY - this.panY;
@@ -350,6 +396,7 @@ class MapNavigator {
 
     this.container.addEventListener('touchmove', (e) => {
       if (!this.isDragging || e.touches.length !== 1) return;
+      this.didDrag = true;
       this.panX = e.touches[0].clientX - this.startX;
       this.panY = e.touches[0].clientY - this.startY;
       this.updateTransform();
@@ -424,7 +471,9 @@ class HamburgGame {
     this.xp = 0;
     this.level = 1;
     this.streak = 0;
+    this.bestStreak = 0;
     this.highScore = 0;
+    this.unlockedBezirkIndex = 0;
     this.progressionMode = true; // false for unlocking all at once
     this.currentMode = 'EXPLORER'; // EXPLORER, LOCATE, QUIZ, TYPE_NAME, NAME_ALL
     this.activeSegment = 'STADTTEILE'; // STADTTEILE or BEZIRKE
@@ -444,7 +493,7 @@ class HamburgGame {
     this.roundIndex = 0;
     this.roundCorrect = 0;
     this.roundIncorrect = 0;
-    this.roundDistrict = 'Eimsbüttel'; // Currently active round district
+    this.roundDistrict = 'Altona'; // Currently active round district
     this.roundHistory = {}; // stadtteilName -> { correct: bool, clickedName: string }
     
     // --- TYPE_NAME Autocomplete index ---
@@ -612,9 +661,25 @@ class HamburgGame {
   loadState() {
     this.xp = parseInt(localStorage.getItem('hh_xp')) || 0;
     this.streak = parseInt(localStorage.getItem('hh_streak')) || 0;
+    this.bestStreak = parseInt(localStorage.getItem('hh_best_streak')) || 0;
     this.highScore = parseInt(localStorage.getItem('hh_highscore')) || 0;
     this.level = this.calculateLevel(this.xp);
     this.progressionMode = localStorage.getItem('hh_progression') !== 'false';
+    const savedUnlockIdx = localStorage.getItem('hh_unlocked_bz_idx');
+    if (savedUnlockIdx !== null) {
+      this.unlockedBezirkIndex = Math.min(
+        parseInt(savedUnlockIdx, 10) || 0,
+        BEZIRKE_PROGRESSION.length - 1
+      );
+    } else {
+      this.unlockedBezirkIndex = 0;
+      for (let i = BEZIRKE_PROGRESSION.length - 1; i >= 0; i--) {
+        if (this.xp >= BEZIRKE_PROGRESSION[i].xpNeeded) {
+          this.unlockedBezirkIndex = i;
+          break;
+        }
+      }
+    }
     const savedMode = localStorage.getItem('hh_mode') || 'EXPLORER';
     this.currentMode = savedMode === 'BEZIRK_MATCH' ? 'EXPLORER' : savedMode;
     this.activeSegment = localStorage.getItem('hh_segment') || 'STADTTEILE';
@@ -643,7 +708,9 @@ class HamburgGame {
   saveState() {
     localStorage.setItem('hh_xp', this.xp);
     localStorage.setItem('hh_streak', this.streak);
+    localStorage.setItem('hh_best_streak', this.bestStreak);
     localStorage.setItem('hh_highscore', this.highScore);
+    localStorage.setItem('hh_unlocked_bz_idx', this.unlockedBezirkIndex);
     localStorage.setItem('hh_progression', this.progressionMode);
     localStorage.setItem('hh_mode', this.currentMode);
     localStorage.setItem('hh_segment', this.activeSegment);
@@ -695,18 +762,58 @@ class HamburgGame {
 
   incrementStreak() {
     this.streak++;
+    if (this.streak > this.bestStreak) {
+      this.bestStreak = this.streak;
+    }
     this.renderStats();
     this.saveState();
   }
 
+  getLastUnlockedBezirk() {
+    return BEZIRKE_PROGRESSION[this.unlockedBezirkIndex]?.name || BEZIRKE_PROGRESSION[0].name;
+  }
+
+  tryUnlockNextBezirk(frontierCorrect, frontierTotal) {
+    if (!this.progressionMode) return null;
+    if (frontierTotal <= 0) return null;
+    const frontierPercent = Math.round((frontierCorrect / frontierTotal) * 100);
+    if (frontierPercent < 75) return null;
+    if (this.unlockedBezirkIndex >= BEZIRKE_PROGRESSION.length - 1) return null;
+
+    const nextBezirk = BEZIRKE_PROGRESSION[this.unlockedBezirkIndex + 1];
+    this.unlockedBezirkIndex++;
+    this.saveState();
+    this.updateMapStates();
+    return nextBezirk.name;
+  }
+
+  getFrontierRoundScore() {
+    const frontierBezirk = this.getLastUnlockedBezirk();
+    let correct = 0;
+    let total = 0;
+
+    for (const q of this.roundQuestions) {
+      const belongsToFrontier = this.activeSegment === 'BEZIRKE'
+        ? q.name === frontierBezirk
+        : q.bezirk === frontierBezirk;
+      if (!belongsToFrontier) continue;
+      total++;
+      if (this.roundHistory[q.name]?.correct) correct++;
+    }
+    return { correct, total };
+  }
+
   // Get list of currently unlocked Bezirke based on progression
   getUnlockedBezirke() {
-    if (!this.progressionMode || this.activeSegment === 'BEZIRKE') {
+    if (!this.progressionMode) {
+      return BEZIRKE_PROGRESSION.map(b => b.name);
+    }
+    if (this.activeSegment === 'BEZIRKE') {
       return BEZIRKE_PROGRESSION.map(b => b.name);
     }
     return BEZIRKE_PROGRESSION
-      .filter(bz => this.xp >= bz.xpNeeded)
-      .map(bz => bz.name);
+      .slice(0, this.unlockedBezirkIndex + 1)
+      .map(b => b.name);
   }
 
   // Check if a specific stadtteil name is in unlocked Bezirke
@@ -811,12 +918,14 @@ class HamburgGame {
   renderStats() {
     const xpVal = document.getElementById('stat-xp');
     const streakVal = document.getElementById('stat-streak');
+    const bestStreakVal = document.getElementById('stat-best-streak');
     const rankName = document.getElementById('stat-rank');
     const nextRankName = document.getElementById('stat-next-rank');
     const progFill = document.getElementById('progress-fill');
     
     xpVal.textContent = this.xp;
     streakVal.textContent = `${this.streak}x`;
+    if (bestStreakVal) bestStreakVal.textContent = `Beste: ${this.bestStreak}x`;
     
     const currentRank = RANKS.find(r => r.level === this.level);
     rankName.textContent = currentRank ? currentRank.name : "Hamburger";
@@ -867,7 +976,7 @@ class HamburgGame {
         <div class="dp-name">${bz.name}</div>
         ${isUnlocked ? 
           `<div class="dp-score">${solvedInDistrict}/${totalInDistrict} (${percent}%)</div>` : 
-          `<div class="dp-lock">🔒 Ab ${bz.xpNeeded} XP</div>`
+          `<div class="dp-lock">🔒 75% im vorherigen Bezirk</div>`
         }
       `;
       
@@ -1573,7 +1682,7 @@ class HamburgGame {
           <h4 style="font-family: var(--font-display); font-weight:700; color: #fff;">Durchlauf starten</h4>
           <p style="font-size:0.82rem; color: var(--text-secondary);">
             Lerne fokussiert in geschlossenen Runden wie bei Sporcle. Richtige/falsche Antworten bleiben markiert!
-            ${this.progressionMode && !isBz ? '<br><strong style="color: var(--color-xp);">Schalte den nächsten Bezirk frei mit einer Runden-Genauigkeit von 75% oder mehr!</strong>' : ''}
+            ${this.progressionMode && !isBz ? '<br><strong style="color: var(--color-xp);">Schalte den nächsten Bezirk frei mit ≥75% im zuletzt freigeschalteten Bezirk!</strong>' : ''}
           </p>
           
           ${!isBz ? `
@@ -1763,22 +1872,38 @@ class HamburgGame {
     document.getElementById('btn-cancel-round').onclick = () => this.endRound(true);
   }
 
+  getAlreadyAnsweredInRound() {
+    const answered = new Set();
+    const isBz = this.activeSegment === 'BEZIRKE';
+    document.querySelectorAll('.stadtteil-path.round-correct, .stadtteil-path.round-incorrect').forEach(p => {
+      if (isBz) {
+        answered.add(p.getAttribute('data-bezirk'));
+      } else {
+        answered.add(p.getAttribute('data-name'));
+      }
+    });
+    return answered;
+  }
+
   // Generate MC Choices for QUIZ
   generateMCROptions(container) {
     const isBz = this.activeSegment === 'BEZIRKE';
+    const answered = this.getAlreadyAnsweredInRound();
     const choices = new Set([this.currentTarget.name]);
-    
+
+    let pool = [];
     if (isBz) {
-      const districts = BEZIRKE_PROGRESSION.map(b => b.name);
-      while (choices.size < 4) {
-        choices.add(districts[Math.floor(Math.random() * districts.length)]);
-      }
+      pool = BEZIRKE_PROGRESSION.map(b => b.name).filter(n => !answered.has(n) && n !== this.currentTarget.name);
     } else {
-      let pool = this.roundQuestions;
-      if (pool.length < 4) pool = HAMBURG_DATA.filter(d => !d.is_island);
-      while (choices.size < 4) {
-        choices.add(pool[Math.floor(Math.random() * pool.length)].name);
+      pool = this.roundQuestions.map(q => q.name).filter(n => !answered.has(n) && n !== this.currentTarget.name);
+      if (pool.length < 3) {
+        pool = HAMBURG_DATA.filter(d => !d.is_island && !answered.has(d.name) && d.name !== this.currentTarget.name).map(d => d.name);
       }
+    }
+
+    while (choices.size < 4 && pool.length > 0) {
+      const pick = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
+      choices.add(pick);
     }
 
     this.currentChoices = Array.from(choices).sort(() => Math.random() - 0.5);
@@ -1786,7 +1911,7 @@ class HamburgGame {
     this.currentChoices.forEach((choice, idx) => {
       const btn = document.createElement('button');
       btn.className = 'choice-btn';
-      btn.innerHTML = `<span>${choice}</span><span class="choice-letter">${letters[idx]}</span>`;
+      btn.innerHTML = `<span>${choice}</span><span class="choice-letter">${letters[idx] || ''}</span>`;
       btn.addEventListener('click', () => this.handleRoundAnswer(choice, btn));
       container.appendChild(btn);
     });
@@ -1926,8 +2051,10 @@ class HamburgGame {
 
     if (!isCorrect) {
       this.sounds.playIncorrect();
+      this.resetStreak();
       this.roundIncorrect++;
       document.getElementById('round-incorrect-count').textContent = this.roundIncorrect;
+      this.revealMissedTarget(correctAnswer, isBz);
       if (input) {
         input.classList.add('input-shake');
         setTimeout(() => input.classList.remove('input-shake'), 400);
@@ -1961,6 +2088,7 @@ class HamburgGame {
 
     document.getElementById('game-prompt-sub').innerHTML = `<span style="color: var(--color-correct); font-weight:700;">Richtig! +${xp} XP</span>`;
 
+    this.roundHistory[correctAnswer] = { correct: true };
     this.roundIndex++;
     setTimeout(() => this.nextRoundQuestion(), 1200);
   }
@@ -2009,6 +2137,7 @@ class HamburgGame {
 
       document.getElementById('game-prompt-sub').innerHTML = `<span style="color: var(--color-correct); font-weight:700;">Richtig! +${xp} XP</span>`;
       
+      this.roundHistory[correctAnswer] = { correct: true };
       this.roundIndex++;
       setTimeout(() => this.nextRoundQuestion(), 1200);
     } else {
@@ -2022,6 +2151,7 @@ class HamburgGame {
 
       document.getElementById('game-prompt-sub').innerHTML = `<span style="color: var(--color-incorrect); font-weight:700;">Falsch! Richtig wäre: ${correctAnswer}</span>`;
       
+      this.roundHistory[correctAnswer] = { correct: false };
       this.roundIndex++;
       setTimeout(() => this.nextRoundQuestion(), 2400);
     }
@@ -2048,6 +2178,7 @@ class HamburgGame {
 
       document.getElementById('game-prompt-sub').innerHTML = `<span style="color: var(--color-correct); font-weight:700;">Korrekt gefunden! +${xp} XP</span>`;
       
+      this.roundHistory[name] = { correct: true };
       this.roundIndex++;
       setTimeout(() => {
         document.querySelectorAll('.stadtteil-path').forEach(p => p.style.pointerEvents = 'auto');
@@ -2062,6 +2193,7 @@ class HamburgGame {
 
       document.getElementById('game-prompt-sub').innerHTML = `<span style="color: var(--color-incorrect); font-weight:700;">Falsch! Richtig wäre: ${this.currentTarget.name}</span>`;
       
+      this.roundHistory[this.currentTarget.name] = { correct: false };
       this.roundIndex++;
       setTimeout(() => {
         document.querySelectorAll('.stadtteil-path').forEach(p => p.style.pointerEvents = 'auto');
@@ -2088,6 +2220,7 @@ class HamburgGame {
 
       document.getElementById('game-prompt-sub').innerHTML = `<span style="color: var(--color-correct); font-weight:700;">Bezirk korrekt! +${xp} XP</span>`;
       
+      this.roundHistory[bezirkClicked] = { correct: true };
       this.roundIndex++;
       setTimeout(() => {
         document.querySelectorAll('.stadtteil-path').forEach(p => p.style.pointerEvents = 'auto');
@@ -2102,6 +2235,7 @@ class HamburgGame {
 
       document.getElementById('game-prompt-sub').innerHTML = `<span style="color: var(--color-incorrect); font-weight:700;">Falsch! Richtig wäre: ${this.currentTarget.name}</span>`;
       
+      this.roundHistory[this.currentTarget.name] = { correct: false };
       this.roundIndex++;
       setTimeout(() => {
         document.querySelectorAll('.stadtteil-path').forEach(p => p.style.pointerEvents = 'auto');
@@ -2188,26 +2322,20 @@ class HamburgGame {
     const percent = Math.round((this.roundCorrect / total) * 100);
     const passed = percent >= 75;
 
-    // progression locks evaluations
+    // progression: unlock next Bezirk when frontier Bezirk scored ≥75% in any mode
     let unlockCongrat = '';
     const isBz = this.activeSegment === 'BEZIRKE';
-
     const roundBezirke = Array.isArray(this.roundDistrict) ? this.roundDistrict : [this.roundDistrict];
-    const singleBezirk = !isBz && roundBezirke.length === 1 ? roundBezirke[0] : null;
 
-    if (this.progressionMode && !isBz && singleBezirk) {
-      const currentIdx = BEZIRKE_PROGRESSION.findIndex(b => b.name === singleBezirk);
-      if (passed && currentIdx >= 0 && currentIdx < BEZIRKE_PROGRESSION.length - 1) {
-        // Unlock next
-        const nextBezirk = BEZIRKE_PROGRESSION[currentIdx + 1];
-        // Bump user XP if needed to trigger unlock or force unlock next
-        if (this.xp < nextBezirk.xpNeeded) {
-          const diff = nextBezirk.xpNeeded - this.xp;
-          this.addXp(diff); // Boost XP so they automatically meet requirement!
-        }
-        unlockCongrat = `<br><h3 style="color: var(--color-xp); margin: 0.5rem 0;">🎉 Bezirk freigeschaltet: ${nextBezirk.name}!</h3>`;
-      } else if (!passed) {
-        unlockCongrat = `<br><span style="color: var(--color-incorrect); font-weight:700;">Durchgefallen! Du benötigst mindestens 75% richtige Antworten, um den nächsten Bezirk freizuschalten.</span>`;
+    if (this.progressionMode) {
+      const { correct: fCorrect, total: fTotal } = this.getFrontierRoundScore();
+      const frontierPercent = fTotal > 0 ? Math.round((fCorrect / fTotal) * 100) : 0;
+      const unlockedNext = this.tryUnlockNextBezirk(fCorrect, fTotal);
+
+      if (unlockedNext) {
+        unlockCongrat = `<br><h3 style="color: var(--color-xp); margin: 0.5rem 0;">🎉 Bezirk freigeschaltet: ${unlockedNext}!</h3>`;
+      } else if (fTotal > 0 && frontierPercent < 75 && this.unlockedBezirkIndex < BEZIRKE_PROGRESSION.length - 1) {
+        unlockCongrat = `<br><span style="color: var(--color-incorrect); font-weight:700;">${this.getLastUnlockedBezirk()}: ${frontierPercent}% — mindestens 75% nötig, um den nächsten Bezirk freizuschalten.</span>`;
       }
     }
 
@@ -2238,6 +2366,7 @@ class HamburgGame {
     `;
 
     if (percent === 100) launchConfetti(this.sounds);
+    else if (percent < 50) launchSadEffects(this.sounds);
 
     this.recordGameHistory({
       mode: this.currentMode,
@@ -2276,27 +2405,31 @@ class HamburgGame {
     this.nameAllFound.clear();
     this.nameAllIsActive = false;
     this.nameAllTimeLeft = 600; // 10 minutes
+    const isBz = this.activeSegment === 'BEZIRKE';
+    const placeLabel = isBz ? 'Bezirke' : 'Stadtteile';
+    const pickerBezirke = isBz ? BEZIRKE_PROGRESSION.map(b => b.name) : this.getUnlockedBezirke();
 
     container.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:0.75rem; text-align:center;" id="name-all-setup">
         <div style="font-size:2.2rem;">⏱️</div>
-        <h4 style="font-family:var(--font-display); font-weight:700; color:#fff;">Nenne alle Stadtteile!</h4>
+        <h4 style="font-family:var(--font-display); font-weight:700; color:#fff;">Nenne alle ${placeLabel}!</h4>
         <p style="font-size:0.82rem; color:var(--text-secondary);">
-          Wie viele Hamburger Stadtteile kannst du aus dem Kopf nennen? 
+          Wie viele Hamburger ${placeLabel} kannst du aus dem Kopf nennen? 
           Tippe sie ein. Richtige leuchten sofort grün auf!
           <br><strong>Zeitlimit: 10:00 Minuten.</strong>
         </p>
+        ${!isBz ? `
         <div style="text-align: left; display:flex; flex-direction:column; gap:0.35rem;">
           <label style="font-size:0.75rem; color: var(--text-muted); font-weight:600;">Bezirke einbeziehen:</label>
           <div class="bezirk-picker" id="nameall-bezirk-picker">
-            ${this.getUnlockedBezirke().map(b => `
+            ${pickerBezirke.map(b => `
               <label class="bezirk-picker-item">
                 <input type="checkbox" value="${b}" checked>
                 <span>${b}</span>
               </label>
             `).join('')}
           </div>
-        </div>
+        </div>` : ''}
         <button class="primary-btn" id="btn-start-nameall" style="padding:0.75rem;">Beginnen</button>
       </div>
 
@@ -2318,7 +2451,7 @@ class HamburgGame {
     `;
 
     document.getElementById('btn-start-nameall').onclick = () => {
-      const selected = this.getSelectedNameAllBezirke();
+      const selected = isBz ? BEZIRKE_PROGRESSION.map(b => b.name) : this.getSelectedNameAllBezirke();
       if (!selected.length) {
         alert('Bitte wähle mindestens einen Bezirk aus.');
         return;
@@ -2334,6 +2467,9 @@ class HamburgGame {
   }
 
   getNameAllPool(bezirke) {
+    if (this.activeSegment === 'BEZIRKE') {
+      return bezirke.map(name => ({ name, bezirk: name }));
+    }
     return HAMBURG_DATA.filter(d => !d.is_island && bezirke.includes(d.bezirk));
   }
 
@@ -2433,37 +2569,50 @@ class HamburgGame {
 
     const cleanStr = str => str.toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
     const cleanVal = cleanStr(val);
+    const isBz = this.activeSegment === 'BEZIRKE';
 
-    // Look for matching stadtteil in database (only within selected Bezirke)
-    const match = HAMBURG_DATA.find(d =>
-      cleanStr(d.name) === cleanVal &&
-      !d.is_island &&
-      this.nameAllActiveBezirke.includes(d.bezirk)
-    );
+    let matchName = null;
+    if (isBz) {
+      const bz = BEZIRKE_PROGRESSION.find(b =>
+        cleanStr(b.name) === cleanVal && this.nameAllActiveBezirke.includes(b.name)
+      );
+      if (bz) matchName = bz.name;
+    } else {
+      const match = HAMBURG_DATA.find(d =>
+        cleanStr(d.name) === cleanVal &&
+        !d.is_island &&
+        this.nameAllActiveBezirke.includes(d.bezirk)
+      );
+      if (match) matchName = match.name;
+    }
     
-    if (match && !this.nameAllFound.has(match.name)) {
-      this.nameAllFound.add(match.name);
+    if (matchName && !this.nameAllFound.has(matchName)) {
+      this.nameAllFound.add(matchName);
       this.sounds.playCorrect();
+      this.incrementStreak();
 
-      // Green highlight map path
-      const correctPath = this.getPathByNeighbourhoodName(match.name);
-      if (correctPath) {
-        correctPath.classList.add('round-correct');
-        this.addMapTextLabel(match.name, match.name, 'correct');
+      if (isBz) {
+        document.querySelectorAll(`.stadtteil-path[data-bezirk="${matchName}"]`).forEach(p => {
+          p.classList.add('round-correct');
+        });
+        this.addMapTextLabel(matchName, matchName, 'correct');
+      } else {
+        const correctPath = this.getPathByNeighbourhoodName(matchName);
+        if (correctPath) {
+          correctPath.classList.add('round-correct');
+          this.addMapTextLabel(matchName, matchName, 'correct');
+        }
+        this.recordRoundProgress(matchName, { skipMapRefresh: true, skipStats: true });
       }
 
       this.addXp(10, { quiet: true });
-      this.recordRoundProgress(match.name, { skipMapRefresh: true, skipStats: true });
 
-      // Update counters
       document.getElementById('name-all-counter').textContent = `${this.nameAllFound.size} / ${totalCount}`;
 
-      // Reset text input field immediately!
       input.value = '';
       
-      // Check if all found!
       if (this.nameAllFound.size === totalCount) {
-        this.stopNameAllChallenge(false); // Victory!
+        this.stopNameAllChallenge(false);
       }
     }
   }
@@ -2485,10 +2634,17 @@ class HamburgGame {
       const revealBatch = () => {
         const slice = missing.slice(idx, idx + 12);
         slice.forEach(d => {
-          const path = this.getPathByNeighbourhoodName(d.name);
-          if (path) {
-            path.classList.add('round-incorrect');
+          if (this.activeSegment === 'BEZIRKE') {
+            document.querySelectorAll(`.stadtteil-path[data-bezirk="${d.name}"]`).forEach(p => {
+              p.classList.add('round-incorrect');
+            });
             this.addMapTextLabel(d.name, d.name, 'incorrect');
+          } else {
+            const path = this.getPathByNeighbourhoodName(d.name);
+            if (path) {
+              path.classList.add('round-incorrect');
+              this.addMapTextLabel(d.name, d.name, 'incorrect');
+            }
           }
         });
         idx += 12;
@@ -2498,10 +2654,26 @@ class HamburgGame {
       };
       requestAnimationFrame(revealBatch);
       this.sounds.playIncorrect();
+      this.resetStreak();
     } else {
       this.sounds.playLevelUp();
       launchConfetti(this.sounds);
-      this.unlockAchievement("meister_alle_stadtteile", "König von Hamburg 👑", "Finde alle Stadtteile in der Sporcle-Challenge!");
+      if (this.activeSegment === 'STADTTEILE') {
+        this.unlockAchievement("meister_alle_stadtteile", "König von Hamburg 👑", "Finde alle Stadtteile in der Sporcle-Challenge!");
+      } else {
+        this.unlockAchievement("meister_alle_bezirke", "Bezirks-Kapitän 🏛️", "Benenne alle sieben Bezirke in der Challenge!");
+      }
+    }
+
+    if (this.progressionMode && this.activeSegment === 'STADTTEILE') {
+      const frontierBezirk = this.getLastUnlockedBezirk();
+      const frontierPool = this.getNameAllPool([frontierBezirk]);
+      const frontierFound = frontierPool.filter(d => this.nameAllFound.has(d.name)).length;
+      this.tryUnlockNextBezirk(frontierFound, frontierPool.length);
+    }
+
+    if (percent < 50 && (surrender || percent < 100)) {
+      launchSadEffects(this.sounds);
     }
 
     this.recordGameHistory({
