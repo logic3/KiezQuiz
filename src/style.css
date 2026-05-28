@@ -757,8 +757,7 @@ body {
   z-index: 10000;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
   display: none;
-  transform: translate(12px, -100%);
-  margin-top: -8px;
+  transform: none;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   white-space: nowrap;
@@ -1088,6 +1087,95 @@ body {
       margin-bottom: 0.1rem;
     }
   }
+}
+
+.action-btn-row {
+  display: flex;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.secondary-btn {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: center;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.secondary-btn.danger-outline {
+  color: var(--color-incorrect);
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.06);
+
+  &:hover {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fff;
+  }
+}
+
+.text-input-field.input-shake {
+  animation: inputShake 0.35s ease-in-out;
+  border-color: var(--color-incorrect) !important;
+}
+
+@keyframes inputShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.name-all-active .stadtteil-path {
+  fill: rgba(12, 18, 35, 0.28) !important;
+  stroke: rgba(255, 255, 255, 0.06) !important;
+}
+
+.name-all-active .water-group .water-fill,
+.name-all-active .water-group .water-channel,
+.name-all-active .water-group .water-channel-glow {
+  opacity: 1;
+}
+
+body.segment-bezirke .stadtteil-path.unlocked-bezirk {
+  stroke-width: 0.35px;
+  stroke: rgba(255, 255, 255, 0.08);
+  fill: rgba(255, 255, 255, 0.03);
+}
+
+body.segment-bezirke .stadtteil-path[data-bezirk="Altona"].unlocked-bezirk { fill: hsla(295, 80%, 55%, 0.12); }
+body.segment-bezirke .stadtteil-path[data-bezirk="Bergedorf"].unlocked-bezirk { fill: hsla(32, 80%, 50%, 0.12); }
+body.segment-bezirke .stadtteil-path[data-bezirk="Eimsbüttel"].unlocked-bezirk { fill: hsla(175, 70%, 42%, 0.12); }
+body.segment-bezirke .stadtteil-path[data-bezirk="Hamburg-Mitte"].unlocked-bezirk { fill: hsla(345, 80%, 55%, 0.12); }
+body.segment-bezirke .stadtteil-path[data-bezirk="Hamburg-Nord"].unlocked-bezirk { fill: hsla(210, 75%, 52%, 0.12); }
+body.segment-bezirke .stadtteil-path[data-bezirk="Harburg"].unlocked-bezirk { fill: hsla(100, 70%, 48%, 0.12); }
+body.segment-bezirke .stadtteil-path[data-bezirk="Wandsbek"].unlocked-bezirk { fill: hsla(260, 75%, 55%, 0.12); }
+
+.game-play-area .secondary-btn {
+  width: 100%;
+}
+
+body.segment-bezirke .stadtteil-path:hover:not(.bezirk-hover-highlight):not(.selected):not(.blink) {
+  stroke-width: 0.35px !important;
+  stroke: rgba(255, 255, 255, 0.05) !important;
+  filter: none !important;
 }
 
 .primary-btn {

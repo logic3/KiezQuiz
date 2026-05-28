@@ -90,6 +90,10 @@ class SoundManager {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) this.ctx = new AudioCtx();
     }
+    if (this.ctx?.state === 'suspended') {
+      return this.ctx.resume().catch(() => {});
+    }
+    return Promise.resolve();
   }
 
   toggleMute() {
@@ -100,9 +104,11 @@ class SoundManager {
 
   playCorrect() {
     if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
+    this.init().then(() => this._playCorrectTone());
+  }
 
+  _playCorrectTone() {
+    if (!this.ctx) return;
     const t = this.ctx.currentTime;
     
     // First Note
@@ -124,9 +130,11 @@ class SoundManager {
 
   playIncorrect() {
     if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
+    this.init().then(() => this._playIncorrectTone());
+  }
 
+  _playIncorrectTone() {
+    if (!this.ctx) return;
     const t = this.ctx.currentTime;
     
     const osc = this.ctx.createOscillator();
@@ -147,9 +155,11 @@ class SoundManager {
 
   playLevelUp() {
     if (this.muted) return;
-    this.init();
-    if (!this.ctx) return;
+    this.init().then(() => this._playLevelUpTone());
+  }
 
+  _playLevelUpTone() {
+    if (!this.ctx) return;
     const t = this.ctx.currentTime;
     const notes = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50]; // Arpeggio C4, E4, G4, C5, E5, G5, C6
     
@@ -348,6 +358,11 @@ class HamburgGame {
     this.tooltip = document.getElementById('map-tooltip');
     
     this.mapNav = new MapNavigator(this.svg, this.mapWrapper);
+    this.reorderMapLayers();
+
+    if (this.tooltip && this.tooltip.parentElement !== document.body) {
+      document.body.appendChild(this.tooltip);
+    }
     
     this.setupUIListeners();
     this.initMapPaths();
@@ -359,13 +374,14 @@ class HamburgGame {
       this.currentMode = 'EXPLORER';
     }
     this.applySegmentUI();
+    this.syncSegmentBodyClass();
     this.setMode(this.resolveModeForCurrentSegment(this.currentMode));
     
     // Initial map unlock updates
     this.updateMapStates();
     
-    // Play sound on first click to unlock context
-    document.addEventListener('click', () => this.sounds.init(), { once: true });
+    document.addEventListener('click', () => this.sounds.init());
+    document.addEventListener('keydown', () => this.sounds.init());
 
     // A–D shortcuts for Karten-Quiz / Bezirk-zuordnen
     document.addEventListener('keydown', (e) => this.handleQuizKeydown(e));
@@ -384,6 +400,7 @@ class HamburgGame {
     this.resetMapClasses();
     this.clearMapTextLabels();
     this.updateMapStates();
+    this.syncSegmentBodyClass();
     this.setMode(this.resolveModeForCurrentSegment(this.currentMode));
   }
 
@@ -631,6 +648,11 @@ class HamburgGame {
         btn.style.display = '';
       }
     });
+  }
+
+  syncSegmentBodyClass() {
+    document.body.classList.toggle('segment-bezirke', this.activeSegment === 'BEZIRKE');
+    document.body.classList.toggle('segment-stadtteile', this.activeSegment === 'STADTTEILE');
   }
 
   applySegmentUI() {
@@ -1002,6 +1024,12 @@ class HamburgGame {
     paths.forEach(path => {
       // Hover Tooltip binding
       path.addEventListener('mousemove', (e) => {
+        const showTooltip = this.shouldShowMapTooltip();
+        if (!showTooltip) {
+          this.tooltip.style.display = 'none';
+          return;
+        }
+
         const name = path.getAttribute('data-name');
         const bezirk = path.getAttribute('data-bezirk');
         
@@ -1079,10 +1107,42 @@ class HamburgGame {
     });
   }
 
+  reorderMapLayers() {
+    if (!this.svg) return;
+    const water = this.svg.querySelector('.water-group');
+    const stadtteile = this.svg.querySelector('.stadtteile-group');
+    const labels = this.svg.querySelector('#map-labels-group');
+    if (water && stadtteile) {
+      this.svg.insertBefore(water, stadtteile);
+    }
+    if (labels) {
+      this.svg.appendChild(labels);
+    }
+  }
+
+  raiseWaterLayerForNameAll() {
+    if (!this.svg) return;
+    const water = this.svg.querySelector('.water-group');
+    const labels = this.svg.querySelector('#map-labels-group');
+    if (water) {
+      this.svg.insertBefore(water, labels || null);
+    }
+  }
+
+  shouldShowMapTooltip() {
+    if (this.nameAllIsActive) return false;
+    if (this.mapNav?.isDragging) return false;
+    if (this.inRound) return false;
+    return true;
+  }
+
   positionMapTooltip(clientX, clientY) {
     if (!this.tooltip) return;
     const offsetX = 14;
-    const offsetY = 16;
+    const offsetY = 12;
+    this.tooltip.style.visibility = 'hidden';
+    this.tooltip.style.display = 'block';
+    this.tooltip.style.position = 'fixed';
     const rect = this.tooltip.getBoundingClientRect();
     const w = rect.width || 160;
     const h = rect.height || 40;
@@ -1092,6 +1152,8 @@ class HamburgGame {
     y = Math.max(8, Math.min(y, window.innerHeight - h - 8));
     this.tooltip.style.left = `${x}px`;
     this.tooltip.style.top = `${y}px`;
+    this.tooltip.style.transform = 'none';
+    this.tooltip.style.visibility = 'visible';
   }
 
   // --- MODE: EXPLORER (ENTDECKER) ---
@@ -1302,7 +1364,7 @@ class HamburgGame {
             <!-- Options or text input will be injected here -->
           </div>
 
-          <button class="control-btn" id="btn-cancel-round" style="margin-top: 1rem; border-color: rgba(239,68,68,0.3); color: var(--color-incorrect); text-align:center; padding:0.4rem;">Runde abbrechen</button>
+          <button type="button" class="secondary-btn danger-outline" id="btn-cancel-round" style="margin-top: 1rem;">Runde abbrechen</button>
         </div>
       </div>
     `;
@@ -1440,9 +1502,16 @@ class HamburgGame {
     }
     else if (this.currentMode === 'TYPE_NAME') {
       promptTitle.textContent = isBz ? "Bezirk benennen" : "Stadtteil benennen";
-      promptTarget.textContent = isBz ? "Welcher Bezirk auf der Karte?" : "Welcher Stadtteil auf der Karte?";
+      promptTarget.textContent = isBz ? "Welcher Bezirk blinkt?" : "Welcher Stadtteil blinkt?";
       promptTarget.classList.remove('highlight');
-      promptSub.textContent = "Tippe den Namen ein und drücke Enter. Die Karte bleibt neutral, bis du richtig liegst.";
+      promptSub.textContent = "Tippe den Namen ein und drücke Enter.";
+
+      if (isBz) {
+        document.querySelectorAll(`.stadtteil-path[data-bezirk="${this.currentTarget.name}"]`).forEach(p => p.classList.add('blink'));
+      } else {
+        const targetPath = this.getPathByNeighbourhoodName(this.currentTarget.name);
+        if (targetPath) targetPath.classList.add('blink');
+      }
 
       this.generateTypingField(optionsContainer);
     }
@@ -1613,6 +1682,7 @@ class HamburgGame {
 
   submitTypingGuess(typedValue) {
     if (!typedValue || !this.currentTarget) return;
+    this.sounds.init();
 
     const correctAnswer = this.currentTarget.name;
     const cleanStr = str => str.toLowerCase().replace(/[^a-z0-9äöüß]/g, '');
@@ -1621,9 +1691,17 @@ class HamburgGame {
     const isBz = this.activeSegment === 'BEZIRKE';
 
     if (!isCorrect) {
+      this.sounds.playIncorrect();
+      this.roundIncorrect++;
+      document.getElementById('round-incorrect-count').textContent = this.roundIncorrect;
       if (input) {
-        input.value = '';
-        input.focus();
+        input.classList.add('input-shake');
+        setTimeout(() => input.classList.remove('input-shake'), 400);
+        input.select();
+      }
+      const sub = document.getElementById('game-prompt-sub');
+      if (sub) {
+        sub.innerHTML = `<span style="color: var(--color-incorrect); font-weight:700;">Nicht richtig — versuch es nochmal!</span>`;
       }
       return;
     }
@@ -1980,9 +2058,9 @@ class HamburgGame {
 
         <input type="text" class="text-input-field" id="name-all-input" placeholder="Gib einen Namen ein..." autocomplete="off">
 
-        <div style="display:flex; gap:0.4rem; margin-top:0.4rem;">
-          <button class="control-btn" id="btn-pause-nameall" style="flex:1; padding:0.4rem; text-align:center;">Pause</button>
-          <button class="control-btn" id="btn-giveup-nameall" style="flex:1; padding:0.4rem; text-align:center; border-color:rgba(239,68,68,0.3); color:var(--color-incorrect);">Aufgeben</button>
+        <div class="action-btn-row" style="margin-top:0.4rem;">
+          <button type="button" class="secondary-btn" id="btn-pause-nameall">Pause</button>
+          <button type="button" class="secondary-btn danger-outline" id="btn-giveup-nameall">Aufgeben</button>
         </div>
       </div>
     `;
@@ -1998,10 +2076,12 @@ class HamburgGame {
     // Hide unlocked segment overlays if progression is on, to make it completely blank
     document.querySelectorAll('.stadtteil-path').forEach(p => {
       p.classList.remove('locked-path', 'unlocked-bezirk', 'discovered');
-      p.style.fill = 'var(--color-default-path)';
-      p.style.stroke = 'var(--bg-main)';
-      p.style.pointerEvents = 'none'; // prevent clicks during challenge
+      p.style.fill = '';
+      p.style.stroke = '';
+      p.style.pointerEvents = 'none';
     });
+    this.svg?.classList.add('name-all-active');
+    this.raiseWaterLayerForNameAll();
 
     this.nameAllFound.clear();
     this.nameAllIsActive = true;
@@ -2018,10 +2098,14 @@ class HamburgGame {
     input.value = '';
     input.focus();
 
-    input.addEventListener('input', () => {
+    if (this._nameAllInputHandler) {
+      input.removeEventListener('input', this._nameAllInputHandler);
+    }
+    this._nameAllInputHandler = () => {
       clearTimeout(this.nameAllInputTimer);
       this.nameAllInputTimer = setTimeout(() => this.checkNameAllInput(input, totalCount), 150);
-    });
+    };
+    input.addEventListener('input', this._nameAllInputHandler);
 
     // Bind Controls
     const pauseBtn = document.getElementById('btn-pause-nameall');
@@ -2110,6 +2194,8 @@ class HamburgGame {
 
   stopNameAllChallenge(surrender = true) {
     this.nameAllIsActive = false;
+    this.svg?.classList.remove('name-all-active');
+    this.reorderMapLayers();
     if (this.timerInterval) clearInterval(this.timerInterval);
 
     const totalCount = HAMBURG_DATA.filter(d => !d.is_island).length;
@@ -2182,4 +2268,5 @@ class HamburgGame {
 window.addEventListener('DOMContentLoaded', () => {
   const game = new HamburgGame();
   game.init();
+  window.hamburgGame = game;
 });
