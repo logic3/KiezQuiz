@@ -1,0 +1,1056 @@
+/* -------------------------------------------------------------
+ * Cyber-Alster Neon-Dark UI Design System
+ * Highly optimized, responsive, and compatible with modern Safari.
+ * ------------------------------------------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap');
+
+:root {
+  /* Theme Base Colors */
+  --bg-main: hsl(230, 28%, 7%);
+  --bg-surface: rgba(17, 24, 39, 0.65);
+  --bg-surface-hover: rgba(26, 36, 56, 0.8);
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-color-glow: rgba(255, 255, 255, 0.16);
+  
+  --text-primary: hsl(210, 40%, 98%);
+  --text-secondary: hsl(215, 20%, 75%);
+  --text-muted: hsl(215, 12%, 50%);
+
+  /* Neon Glow Districts */
+  --color-altona: hsl(295, 100%, 65%);       /* Purple/Magenta */
+  --color-bergedorf: hsl(32, 100%, 55%);     /* Warm Orange */
+  --color-eimsbuettel: hsl(175, 100%, 45%);   /* Turquoise Cyan */
+  --color-hamburg-mitte: hsl(345, 100%, 60%); /* Rose Red */
+  --color-hamburg-nord: hsl(210, 100%, 60%);  /* electric Blue */
+  --color-harburg: hsl(100, 95%, 55%);       /* Lime Green */
+  --color-wandsbek: hsl(260, 100%, 65%);     /* Deep Violet */
+  --color-default-path: hsl(225, 20%, 18%);
+  --color-neutral-glow: hsl(200, 100%, 60%);
+
+  /* UI Game Colors */
+  --color-correct: hsl(142, 76%, 45%);
+  --color-incorrect: hsl(350, 89%, 60%);
+  --color-xp: hsl(47, 95%, 55%);
+  
+  /* Fonts */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-display: 'Space Grotesk', var(--font-sans);
+  
+  /* Radii & Transitions */
+  --radius-lg: 16px;
+  --radius-md: 10px;
+  --radius-sm: 6px;
+  --transition-smooth: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-fast: all 0.15s ease;
+}
+
+/* Reset & Scrollbar */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-main);
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%),
+    radial-gradient(at 100% 0%, hsla(220,53%,10%,1) 0, transparent 50%),
+    radial-gradient(at 50% 100%, hsla(280,30%,8%,1) 0, transparent 60%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Webkit Custom Scrollbar (Safari compatible) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-main);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* Container & Layout */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1.5rem;
+  gap: 1.5rem;
+}
+
+/* Header & Progress Stats */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.25rem 1.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  
+  h1 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, #fff 30%, var(--color-neutral-glow) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  .badge {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 9999px;
+    letter-spacing: 0.05em;
+    color: var(--color-neutral-glow);
+    text-transform: uppercase;
+  }
+}
+
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  
+  .label {
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  .value {
+    color: #fff;
+    font-family: var(--font-display);
+  }
+  
+  &.xp-pill .value {
+    color: var(--color-xp);
+    text-shadow: 0 0 10px rgba(255, 191, 0, 0.3);
+  }
+  
+  &.streak-pill {
+    background: rgba(255, 51, 119, 0.05);
+    border-color: rgba(255, 51, 119, 0.2);
+    .value {
+      color: var(--color-hamburg-mitte);
+      text-shadow: 0 0 10px rgba(255, 51, 119, 0.3);
+    }
+  }
+}
+
+.level-tracker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 180px;
+
+  .level-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: 600;
+    
+    .rank-name {
+      color: var(--color-neutral-glow);
+    }
+  }
+
+  .progress-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--color-neutral-glow), var(--color-wandsbek));
+    border-radius: 999px;
+    transition: width 0.5s ease-out;
+    box-shadow: 0 0 10px rgba(0, 162, 255, 0.5);
+  }
+}
+
+.audio-toggle {
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  
+  &:hover {
+    border-color: var(--border-color-glow);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 1.5rem;
+  align-items: stretch;
+  flex: 1;
+}
+
+/* Left Panel - Game Console */
+.console-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Glassmorphism Card Style */
+.glass-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-smooth);
+  
+  &:hover {
+    border-color: var(--border-color-glow);
+  }
+}
+
+/* Mode Selection Cards */
+.mode-selector {
+  h3 {
+    font-family: var(--font-display);
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .modes-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  
+  .mode-icon {
+    font-size: 1.25rem;
+    filter: grayscale(1);
+    transition: var(--transition-fast);
+  }
+  
+  &:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.15);
+    .mode-icon {
+      filter: grayscale(0);
+      transform: scale(1.1);
+    }
+  }
+  
+  &.active {
+    color: #fff;
+    background: rgba(0, 162, 255, 0.1);
+    border-color: rgba(0, 162, 255, 0.4);
+    box-shadow: inset 0 0 10px rgba(0, 162, 255, 0.15);
+    .mode-icon {
+      filter: grayscale(0);
+    }
+  }
+}
+
+/* Gameplay Interactive Section */
+.game-play-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 250px;
+}
+
+.prompt-box {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  
+  .prompt-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-neutral-glow);
+    margin-bottom: 0.4rem;
+  }
+  
+  .prompt-target {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    
+    &.highlight {
+      color: var(--color-neutral-glow);
+      text-shadow: 0 0 15px rgba(0, 162, 255, 0.4);
+    }
+  }
+  
+  .prompt-sub {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 0.5rem;
+  }
+}
+
+/* Multiple Choice Grid */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.choice-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  padding: 0.9rem 1.2rem;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  
+  .choice-letter {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-sm);
+  }
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(2px);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &.correct {
+    background: rgba(20, 184, 166, 0.15);
+    border-color: var(--color-correct);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(20, 184, 166, 0.25);
+    pointer-events: none;
+  }
+
+  &.incorrect {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: var(--color-incorrect);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+    pointer-events: none;
+  }
+}
+
+/* Info Panels (Stadtteil details) */
+.info-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  animation: fadeIn 0.3s ease-out;
+
+  .detail-header {
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.75rem;
+    
+    h2 {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+    }
+    
+    .bezirk-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-top: 0.25rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: var(--radius-sm);
+    }
+  }
+
+  .detail-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .detail-stat {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    
+    .ds-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+    
+    .ds-value {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #fff;
+    }
+  }
+  
+  .detail-trivia {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    background: rgba(0, 162, 255, 0.03);
+    border: 1px solid rgba(0, 162, 255, 0.15);
+    padding: 0.8rem 1rem;
+    border-radius: var(--radius-md);
+    position: relative;
+    
+    &::before {
+      content: "💡";
+      margin-right: 0.4rem;
+    }
+  }
+}
+
+.empty-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-muted);
+  gap: 0.75rem;
+  
+  .ei-icon {
+    font-size: 2rem;
+    opacity: 0.5;
+  }
+}
+
+/* Progression & District Unlocker Card */
+.unlocker-card {
+  .district-progress-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-top: 0.75rem;
+  }
+}
+
+.district-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  
+  .dp-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    box-shadow: 0 0 6px var(--text-muted);
+  }
+  
+  .dp-name {
+    font-weight: 600;
+    flex: 1;
+    color: var(--text-secondary);
+  }
+  
+  .dp-score {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+  
+  .dp-lock {
+    font-size: 0.8rem;
+    opacity: 0.5;
+  }
+  
+  &.unlocked {
+    .dp-name {
+      color: #fff;
+    }
+    .dp-score {
+      color: var(--text-primary);
+    }
+  }
+  
+  &.locked {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.03);
+    opacity: 0.5;
+    
+    .dp-indicator {
+      background: transparent;
+      border: 1px solid var(--text-muted);
+      box-shadow: none;
+    }
+  }
+  
+  &.active-unlock {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+/* Right Panel - Map Section */
+.map-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  height: 100%;
+}
+
+.map-container-wrapper {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  min-height: 500px;
+  
+  &:hover {
+    border-color: var(--border-color-glow);
+  }
+}
+
+/* Floating Tooltip */
+.map-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(10, 15, 30, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+  z-index: 100;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  display: none;
+  transform: translate(-50%, -100%);
+  margin-top: -10px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  white-space: nowrap;
+  
+  .tooltip-bezirk {
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.1rem;
+  }
+}
+
+/* SVG Hamburg Map Styling */
+.hamburg-map-svg {
+  width: 100%;
+  height: 100%;
+  max-height: 70vh;
+  transform-origin: center;
+  will-change: transform;
+}
+
+.hamburg-map-svg.smooth-transition {
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+/* Water styling (Elbe, Alster) */
+.water-group path {
+  pointer-events: none; /* click-through so user can click neighbourhoods behind it */
+}
+
+/* SVG Path States */
+.stadtteil-path {
+  fill: var(--color-default-path);
+  stroke: var(--bg-main);
+  stroke-width: 0.8px;
+  stroke-linejoin: round;
+  cursor: pointer;
+  transition: fill 0.25s ease, stroke 0.25s ease, stroke-width 0.2s ease, filter 0.2s ease;
+  transform-origin: center;
+}
+
+/* Hover and Glowing borders based on Bezirk CSS Classes */
+.stadtteil-path:hover {
+  stroke-width: 1.5px !important;
+  stroke: #fff !important;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.6)) !important;
+  z-index: 10;
+}
+
+/* Styling paths per Bezirk when active/discovered */
+.stadtteil-path.unlocked-bezirk {
+  fill: rgba(255, 255, 255, 0.04);
+  stroke: rgba(255, 255, 255, 0.1);
+}
+
+.stadtteil-path[data-bezirk="Altona"].discovered { fill: hsla(295, 100%, 65%, 0.15); stroke: hsla(295, 100%, 65%, 0.4); }
+.stadtteil-path[data-bezirk="Bergedorf"].discovered { fill: hsla(32, 100%, 55%, 0.15); stroke: hsla(32, 100%, 55%, 0.4); }
+.stadtteil-path[data-bezirk="Eimsbüttel"].discovered { fill: hsla(175, 100%, 45%, 0.15); stroke: hsla(175, 100%, 45%, 0.4); }
+.stadtteil-path[data-bezirk="Hamburg-Mitte"].discovered { fill: hsla(345, 100%, 60%, 0.15); stroke: hsla(345, 100%, 60%, 0.4); }
+.stadtteil-path[data-bezirk="Hamburg-Nord"].discovered { fill: hsla(210, 100%, 60%, 0.15); stroke: hsla(210, 100%, 60%, 0.4); }
+.stadtteil-path[data-bezirk="Harburg"].discovered { fill: hsla(100, 95%, 55%, 0.15); stroke: hsla(100, 95%, 55%, 0.4); }
+.stadtteil-path[data-bezirk="Wandsbek"].discovered { fill: hsla(260, 100%, 65%, 0.15); stroke: hsla(260, 100%, 65%, 0.4); }
+
+/* Highlight state (Explorer Selection or Target) */
+.stadtteil-path.selected {
+  stroke-width: 2px !important;
+  z-index: 20;
+}
+.stadtteil-path[data-bezirk="Altona"].selected { fill: hsla(295, 100%, 65%, 0.45); stroke: var(--color-altona) !important; filter: drop-shadow(0 0 8px var(--color-altona)) !important; }
+.stadtteil-path[data-bezirk="Bergedorf"].selected { fill: hsla(32, 100%, 55%, 0.45); stroke: var(--color-bergedorf) !important; filter: drop-shadow(0 0 8px var(--color-bergedorf)) !important; }
+.stadtteil-path[data-bezirk="Eimsbüttel"].selected { fill: hsla(175, 100%, 45%, 0.45); stroke: var(--color-eimsbuettel) !important; filter: drop-shadow(0 0 8px var(--color-eimsbuettel)) !important; }
+.stadtteil-path[data-bezirk="Hamburg-Mitte"].selected { fill: hsla(345, 100%, 60%, 0.45); stroke: var(--color-hamburg-mitte) !important; filter: drop-shadow(0 0 8px var(--color-hamburg-mitte)) !important; }
+.stadtteil-path[data-bezirk="Hamburg-Nord"].selected { fill: hsla(210, 100%, 60%, 0.45); stroke: var(--color-hamburg-nord) !important; filter: drop-shadow(0 0 8px var(--color-hamburg-nord)) !important; }
+.stadtteil-path[data-bezirk="Harburg"].selected { fill: hsla(100, 95%, 55%, 0.45); stroke: var(--color-harburg) !important; filter: drop-shadow(0 0 8px var(--color-harburg)) !important; }
+.stadtteil-path[data-bezirk="Wandsbek"].selected { fill: hsla(260, 100%, 65%, 0.45); stroke: var(--color-wandsbek) !important; filter: drop-shadow(0 0 8px var(--color-wandsbek)) !important; }
+
+/* Blinking animation for Card quiz */
+.stadtteil-path.blink {
+  animation: mapPulse 1.5s infinite ease-in-out;
+  stroke: #fff !important;
+  stroke-width: 1.5px;
+  z-index: 15;
+}
+
+/* Success / Failure visual responses on map */
+.stadtteil-path.correct-flash {
+  fill: hsla(142, 76%, 45%, 0.5) !important;
+  stroke: var(--color-correct) !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 12px var(--color-correct)) !important;
+  z-index: 30;
+}
+
+.stadtteil-path.incorrect-flash {
+  fill: hsla(350, 89%, 60%, 0.5) !important;
+  stroke: var(--color-incorrect) !important;
+  stroke-width: 2.5px !important;
+  filter: drop-shadow(0 0 12px var(--color-incorrect)) !important;
+  z-index: 30;
+  animation: mapShake 0.4s ease-in-out;
+}
+
+/* Hidden locked paths (prevent interaction unless unlocked) */
+.stadtteil-path.locked-path {
+  fill: rgba(0, 0, 0, 0.4);
+  stroke: rgba(255, 255, 255, 0.02);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Floating Neuwerk Special Overlay box */
+.neuwerk-overlay {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid var(--border-color);
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  z-index: 50;
+  
+  .no-badge {
+    background: var(--color-hamburg-mitte);
+    color: #fff;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    box-shadow: 0 0 6px var(--color-hamburg-mitte);
+  }
+  
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(17, 24, 39, 0.95);
+    transform: translateY(-1px);
+  }
+}
+
+/* Map Controls (Zoom / Help) */
+.map-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  
+  .zoom-btns {
+    display: flex;
+    gap: 0.4rem;
+  }
+  
+  .control-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 0.3rem 0.7rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 700;
+    transition: var(--transition-fast);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+  }
+  
+  .map-hint {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+}
+
+/* Onboarding & Overlay Modal */
+.overlay-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(7, 10, 20, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.modal-content {
+  background: radial-gradient(circle at top right, rgba(0, 162, 255, 0.08), transparent 60%), var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  h2 {
+    font-family: var(--font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(135deg, #fff 40%, var(--color-neutral-glow) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  
+  p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+}
+
+.modal-features {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  margin-bottom: 1.75rem;
+}
+
+.mf-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-color);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  
+  .mf-icon {
+    font-size: 1.25rem;
+  }
+  
+  .mf-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    
+    strong {
+      color: #fff;
+      display: block;
+      margin-bottom: 0.1rem;
+    }
+  }
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, var(--color-neutral-glow), var(--color-wandsbek));
+  border: none;
+  color: #fff;
+  padding: 0.9rem 2rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 15px rgba(0, 162, 255, 0.4);
+  width: 100%;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 162, 255, 0.6);
+  }
+  
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes mapPulse {
+  0% { fill: rgba(255, 255, 255, 0.04); }
+  50% { fill: rgba(255, 255, 255, 0.25); filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.4)); }
+  100% { fill: rgba(255, 255, 255, 0.04); }
+}
+
+@keyframes mapShake {
+  0%, 100% { transform: translate(0, 0); }
+  20%, 60% { transform: translate(-3px, 0); }
+  40%, 80% { transform: translate(3px, 0); }
+}
+
+/* Responsive Styles */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .console-panel {
+    order: 2;
+  }
+  
+  .map-panel {
+    order: 1;
+  }
+  
+  .map-container-wrapper {
+    min-height: 450px;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-container {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .app-header {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+  
+  .stats-bar {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .level-tracker {
+    width: 100%;
+  }
+  
+  .glass-card {
+    padding: 1rem;
+    border-radius: var(--radius-md);
+  }
+  
+  .map-container-wrapper {
+    min-height: 350px;
+    border-radius: var(--radius-md);
+    padding: 0.75rem;
+  }
+  
+  .brand h1 {
+    font-size: 1.25rem;
+  }
+  
+  .choice-btn {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .prompt-box .prompt-target {
+    font-size: 1.5rem;
+  }
+}
+
+/* Slider Switch CSS */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
+  transition: 0.3s;
+  border-radius: 34px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: var(--text-secondary);
+  transition: 0.3s;
+  border-radius: 50%;
+}
+.switch input:checked + .slider {
+  background-color: rgba(0, 162, 255, 0.15);
+  border-color: rgba(0, 162, 255, 0.4);
+}
+.switch input:checked + .slider:before {
+  transform: translateX(20px);
+  background-color: var(--color-neutral-glow);
+  box-shadow: 0 0 8px var(--color-neutral-glow);
+}

@@ -1,0 +1,11 @@
+{
+  "name": "hamburg-stadtteile-game",
+  "version": "1.0.0",
+  "description": "Ein gamifiziertes Web-Erlebnis zum Erlernen der 7 Bezirke und 104 Stadtteile Hamburgs.",
+  "scripts": {
+    "dev": "npx -y http-server -p 3000 -o"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
