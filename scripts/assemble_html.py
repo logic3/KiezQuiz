@@ -294,9 +294,17 @@ def main():
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>KiezQuiz – Stadtteile spielerisch lernen</title>
   <meta name="description" content="KiezQuiz: Lerne spielerisch alle 7 Bezirke und 104 Stadtteile Hamburgs – interaktiv, offline spielbar und mobiloptimiert.">
+  <meta name="theme-color" content="#0f1118">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="KiezQuiz">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon.svg">
   <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
@@ -463,14 +471,20 @@ def main():
             <button class="control-btn" id="btn-zoom-out" title="Verkleinern">-</button>
             <button class="control-btn" id="btn-zoom-reset" title="Originalgröße und Zentrierung" style="color: var(--color-neutral-glow); font-weight: 800; border-color: rgba(0, 162, 255, 0.3);">🏠 Zentrieren & Reset</button>
           </div>
-          <div class="map-hint">
-            💡 Tipp: Ziehe mit gedrückter Maustaste zum Verschieben. Benutze das Mausrad zum Zoomen.
+          <div class="map-hint" id="map-hint-text">
+            💡 Tipp: Ziehe zum Verschieben. Pinch oder Mausrad zum Zoomen.
           </div>
         </div>
 
       </section>
       
     </main>
+
+    <footer class="app-footer">
+      <p class="privacy-notice">
+        <strong>Datenschutz:</strong> Keine Server, keine Accounts — dein Spielstand (XP, Streak, Fortschritt) wird nur lokal im Browser gespeichert und nicht an uns übertragen.
+      </p>
+    </footer>
   </div>
 
   <!-- Database & Logic Script tags -->

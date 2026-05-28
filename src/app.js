@@ -396,12 +396,21 @@ class MapNavigator {
     this.panX = 0;
     this.panY = 0;
     this.isDragging = false;
+    this.isPinching = false;
     this.didDrag = false;
     this.startX = 0;
     this.startY = 0;
+    this.lastPinchDistance = 0;
     
     this.setupListeners();
     this.updateTransform();
+  }
+
+  getPinchDistance(e) {
+    const [a, b] = [e.touches[0], e.touches[1]];
+    const dx = a.clientX - b.clientX;
+    const dy = a.clientY - b.clientY;
+    return Math.hypot(dx, dy);
   }
 
   setupListeners() {
@@ -432,18 +441,46 @@ class MapNavigator {
       }
     });
 
-    // Touch Support for Mobile
+    // Touch: pan (1 finger) and pinch-zoom (2 fingers)
     this.container.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        this.isDragging = false;
+        this.isPinching = true;
+        this.didDrag = false;
+        this.lastPinchDistance = this.getPinchDistance(e);
+        this.svg.classList.remove('smooth-transition');
+        e.preventDefault();
+        return;
+      }
       if (e.touches.length === 1) {
+        this.isPinching = false;
         this.isDragging = true;
         this.didDrag = false;
         this.svg.classList.remove('smooth-transition');
         this.startX = e.touches[0].clientX - this.panX;
         this.startY = e.touches[0].clientY - this.panY;
       }
-    });
+    }, { passive: false });
 
     this.container.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && this.isPinching) {
+        const dist = this.getPinchDistance(e);
+        if (this.lastPinchDistance > 0) {
+          const scale = dist / this.lastPinchDistance;
+          const oldZoom = this.zoom;
+          this.zoom = Math.min(Math.max(this.zoom * scale, 0.8), 8);
+          const rect = this.container.getBoundingClientRect();
+          const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - rect.left;
+          const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2 - rect.top;
+          this.panX = cx - (cx - this.panX) * (this.zoom / oldZoom);
+          this.panY = cy - (cy - this.panY) * (this.zoom / oldZoom);
+          this.updateTransform();
+        }
+        this.lastPinchDistance = dist;
+        this.didDrag = true;
+        e.preventDefault();
+        return;
+      }
       if (!this.isDragging || e.touches.length !== 1) return;
       this.didDrag = true;
       this.panX = e.touches[0].clientX - this.startX;
@@ -452,8 +489,14 @@ class MapNavigator {
       e.preventDefault();
     }, { passive: false });
 
-    this.container.addEventListener('touchend', () => {
-      this.isDragging = false;
+    this.container.addEventListener('touchend', (e) => {
+      if (e.touches.length < 2) {
+        this.isPinching = false;
+        this.lastPinchDistance = 0;
+      }
+      if (e.touches.length === 0) {
+        this.isDragging = false;
+      }
     });
 
     // Mouse Wheel Zoom (Silkier and dampened)
@@ -577,6 +620,7 @@ class HamburgGame {
     }
     
     this.setupUIListeners();
+    this.setupMobileMapHint();
     this.initMapPaths();
     this.buildBezirkBoundaries();
     this.renderStats();
@@ -641,6 +685,15 @@ class HamburgGame {
         this.switchSegment('BEZIRKE');
       });
     }
+  }
+
+  setupMobileMapHint() {
+    const hint = document.getElementById('map-hint-text');
+    if (!hint) return;
+    const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches;
+    hint.textContent = isTouch
+      ? '💡 Tipp: Mit einem Finger verschieben, mit zwei Fingern zoomen. +/- Buttons nutzen.'
+      : '💡 Tipp: Ziehe zum Verschieben. Mausrad oder Pinch zum Zoomen.';
   }
 
   setupUIListeners() {
@@ -1352,6 +1405,10 @@ class HamburgGame {
       <div class="modal-content" style="max-width: 400px;">
         <h2>⚙️ Einstellungen</h2>
         <hr style="border-color: rgba(255,255,255,0.1); margin: 1rem 0;">
+        <div class="settings-privacy-block" style="margin-bottom: 1.2rem;">
+          <strong style="display:block; margin-bottom: 0.4rem;">🔒 Datenschutz</strong>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.5;">Keine Server, keine Accounts. Dein Spielstand wird nur lokal im Browser gespeichert (localStorage) und nicht an Dritte übermittelt. Beim Löschen des Browser-Verlaufs geht der Fortschritt verloren.</p>
+        </div>
         <div style="margin-bottom: 1.2rem;">
           <strong style="display:block; margin-bottom: 0.4rem;">🗑️ Spielstand zurücksetzen</strong>
           <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0 0 0.8rem 0;">Löscht alle XP, Achievements und Fortschritte. Frischer Start als Quiddje.</p>
@@ -1580,32 +1637,17 @@ class HamburgGame {
     paths.forEach(path => {
       // Hover Tooltip binding
       path.addEventListener('mousemove', (e) => {
-        const showTooltip = this.shouldShowMapTooltip();
-        if (!showTooltip) {
-          this.tooltip.style.display = 'none';
-          return;
-        }
-
-        const name = path.getAttribute('data-name');
-        const bezirk = path.getAttribute('data-bezirk');
-        
-        if (path.classList.contains('locked-path') && !this.nameAllIsActive) {
-          this.tooltip.innerHTML = `<div>🔒 Bezirk gesperrt</div><div class="tooltip-bezirk">Lerne weiter zum Freischalten</div>`;
-        } else {
-          if (this.activeSegment === 'BEZIRKE') {
-            this.tooltip.innerHTML = `<div>Bezirk: ${bezirk}</div><div class="tooltip-bezirk">Klicken zum Lernen</div>`;
-          } else {
-            this.tooltip.innerHTML = `<div>${name}</div><div class="tooltip-bezirk">${bezirk}</div>`;
-          }
-        }
-        
-        this.positionMapTooltip(e.clientX, e.clientY);
-        this.tooltip.style.display = 'block';
+        this.showMapTooltipForPath(path, e.clientX, e.clientY);
       });
 
       path.addEventListener('mouseleave', () => {
         this.tooltip.style.display = 'none';
       });
+
+      path.addEventListener('touchstart', (e) => {
+        if (e.touches.length !== 1) return;
+        this.showMapTooltipForPath(path, e.touches[0].clientX, e.touches[0].clientY);
+      }, { passive: true });
 
       // Collective hover highlight for BEZIRKE segment
       path.addEventListener('mouseenter', () => {
@@ -1695,9 +1737,27 @@ class HamburgGame {
 
   shouldShowMapTooltip() {
     if (this.nameAllIsActive) return false;
-    if (this.mapNav?.isDragging) return false;
+    if (this.mapNav?.isDragging || this.mapNav?.isPinching) return false;
     if (this.inRound) return false;
     return true;
+  }
+
+  showMapTooltipForPath(path, clientX, clientY) {
+    if (!this.shouldShowMapTooltip() || !this.tooltip) {
+      if (this.tooltip) this.tooltip.style.display = 'none';
+      return;
+    }
+    const name = path.getAttribute('data-name');
+    const bezirk = path.getAttribute('data-bezirk');
+    if (path.classList.contains('locked-path') && !this.nameAllIsActive) {
+      this.tooltip.innerHTML = `<div>🔒 Bezirk gesperrt</div><div class="tooltip-bezirk">Lerne weiter zum Freischalten</div>`;
+    } else if (this.activeSegment === 'BEZIRKE') {
+      this.tooltip.innerHTML = `<div>Bezirk: ${bezirk}</div><div class="tooltip-bezirk">Tippen zum Lernen</div>`;
+    } else {
+      this.tooltip.innerHTML = `<div>${name}</div><div class="tooltip-bezirk">${bezirk}</div>`;
+    }
+    this.positionMapTooltip(clientX, clientY);
+    this.tooltip.style.display = 'block';
   }
 
   positionMapTooltip(clientX, clientY) {
