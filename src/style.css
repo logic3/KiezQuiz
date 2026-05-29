@@ -117,6 +117,13 @@ body.overlay-open {
   font-weight: 600;
 }
 
+.footer-credit {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 0.35rem;
+  opacity: 0.75;
+}
+
 /* Container & Layout */
 .app-container {
   display: flex;
