@@ -369,7 +369,7 @@ function launchSadEffects(soundManager) {
 
 let overlayScrollLockY = 0;
 
-function openOverlayModal(html) {
+function openOverlayModal(html, { closeOnBackdrop = false } = {}) {
   const modal = document.createElement('div');
   modal.className = 'overlay-modal';
   modal.innerHTML = html;
@@ -377,6 +377,11 @@ function openOverlayModal(html) {
   document.body.style.top = `-${overlayScrollLockY}px`;
   document.body.classList.add('overlay-open');
   document.body.appendChild(modal);
+  if (closeOnBackdrop) {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeOverlayModal(modal);
+    });
+  }
   return modal;
 }
 
@@ -1465,7 +1470,7 @@ class HamburgGame {
         </div>
         <button class="primary-btn" id="btn-history-close">Schließen</button>
       </div>
-    `);
+    `, { closeOnBackdrop: true });
     document.getElementById('btn-history-close').addEventListener('click', () => closeOverlayModal(modal));
   }
 
@@ -1485,7 +1490,7 @@ class HamburgGame {
         </div>
         <button class="primary-btn" id="btn-settings-close" style="margin-top: 0.5rem;">Schließen</button>
       </div>
-    `);
+    `, { closeOnBackdrop: true });
     document.getElementById('btn-settings-close').addEventListener('click', () => closeOverlayModal(modal));
     document.getElementById('btn-settings-reset').addEventListener('click', () => this.resetGame());
   }

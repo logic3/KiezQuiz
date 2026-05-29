@@ -484,6 +484,7 @@ def main():
       <p class="privacy-notice">
         <strong>Datenschutz:</strong> Keine Server, keine Accounts — dein Spielstand (XP, Streak, Fortschritt) wird nur lokal im Browser gespeichert und nicht an uns übertragen.
       </p>
+      <p class="footer-credit">Courtesy of Jeremiah J. Lauer, LL.M.</p>
     </footer>
   </div>
 
